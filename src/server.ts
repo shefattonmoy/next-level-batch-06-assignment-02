@@ -31,7 +31,7 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
 
 
-app.get('/health', (req, res) => {
+app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Server is running',
