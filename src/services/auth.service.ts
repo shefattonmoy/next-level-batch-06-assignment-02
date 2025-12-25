@@ -6,7 +6,6 @@ import { Logger } from '../utils/logger';
 export class AuthService {
   static async register(userData: RegisterRequest): Promise<ApiResponse<Omit<User, 'password'>>> {
     try {
-      // Ensure email is lowercase (extra safety)
       const normalizedEmail = userData.email.toLowerCase();
       
       const existingUser = await UserModel.findByEmail(normalizedEmail);
@@ -44,7 +43,6 @@ export class AuthService {
 
   static async login(loginData: AuthRequest): Promise<ApiResponse<{ token: string; user: Omit<User, 'password'> }>> {
     try {
-      // Ensure email is lowercase
       const normalizedEmail = loginData.email.toLowerCase();
       
       const user = await UserModel.findByEmail(normalizedEmail);
@@ -69,11 +67,19 @@ export class AuthService {
         role: user.role
       };
 
-      const token = jwt.sign(
-        jwtPayload,
-        process.env.JWT_SECRET!,
-        { expiresIn: process.env.JWT_EXPIRES_IN || '30d' }
-      );
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        throw new Error('JWT_SECRET is not configured');
+      }
+
+      const expiresIn: any | number = process.env.JWT_EXPIRES_IN || '7d';
+      
+      // Fixed jwt.sign call
+      const signOptions: jwt.SignOptions = {
+        expiresIn
+      };
+      
+      const token = jwt.sign(jwtPayload, jwtSecret, signOptions);
 
       const { password, ...userWithoutPassword } = user;
 
