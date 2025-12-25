@@ -2,6 +2,7 @@
   "name": "vehicle-rental-system",
   "version": "1.0.0",
   "description": "Vehicle Rental System Backend API",
+  "type": "commonjs",
   "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
