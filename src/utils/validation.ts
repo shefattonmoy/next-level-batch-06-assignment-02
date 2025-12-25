@@ -5,8 +5,17 @@ export class Validation {
   }
 
   static isValidPhone(phone: string): boolean {
-    const phoneRegex = /^\+?[0-9]\d{1,14}$/;
-    return phoneRegex.test(phone);
+    const cleanedPhone = String(phone).trim();
+
+    const hasPlus = cleanedPhone.startsWith('+');
+
+    const digitsOnly = cleanedPhone.replace(/\D/g, '');
+
+    const finalPhone = hasPlus ? '+' + digitsOnly : digitsOnly;
+    
+    const phoneRegex = /^(\+)?\d{10,15}$/;
+    
+    return phoneRegex.test(finalPhone);
   }
 
   static isValidDate(dateString: string): boolean {

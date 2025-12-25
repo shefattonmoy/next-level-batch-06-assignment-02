@@ -6,7 +6,10 @@ import { Logger } from '../utils/logger';
 export class AuthService {
   static async register(userData: RegisterRequest): Promise<ApiResponse<Omit<User, 'password'>>> {
     try {
-      const existingUser = await UserModel.findByEmail(userData.email);
+      // Ensure email is lowercase (extra safety)
+      const normalizedEmail = userData.email.toLowerCase();
+      
+      const existingUser = await UserModel.findByEmail(normalizedEmail);
       if (existingUser) {
         return {
           success: false,
@@ -16,7 +19,7 @@ export class AuthService {
 
       const user = await UserModel.create({
         name: userData.name,
-        email: userData.email,
+        email: normalizedEmail,
         password: userData.password,
         phone: userData.phone,
         role: userData.role || 'customer'
@@ -41,7 +44,10 @@ export class AuthService {
 
   static async login(loginData: AuthRequest): Promise<ApiResponse<{ token: string; user: Omit<User, 'password'> }>> {
     try {
-      const user = await UserModel.findByEmail(loginData.email);
+      // Ensure email is lowercase
+      const normalizedEmail = loginData.email.toLowerCase();
+      
+      const user = await UserModel.findByEmail(normalizedEmail);
       if (!user) {
         return {
           success: false,
@@ -49,7 +55,7 @@ export class AuthService {
         };
       }
 
-      const isValidPassword = await UserModel.comparePassword(loginData.email, loginData.password);
+      const isValidPassword = await UserModel.comparePassword(normalizedEmail, loginData.password);
       if (!isValidPassword) {
         return {
           success: false,
@@ -65,8 +71,8 @@ export class AuthService {
 
       const token = jwt.sign(
         jwtPayload,
-        process.env.JWT_SECRET || 'your_default_secret_key_change_in_production',
-        { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
+        process.env.JWT_SECRET!,
+        { expiresIn: process.env.JWT_EXPIRES_IN || '30d' }
       );
 
       const { password, ...userWithoutPassword } = user;

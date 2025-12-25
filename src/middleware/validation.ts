@@ -17,8 +17,10 @@ export const validateRegister = (req: Request, res: Response, next: NextFunction
     errors.push('Password must be at least 6 characters long');
   }
 
-  if (!phone || !Validation.isValidPhone(phone)) {
-    errors.push('Valid phone number is required');
+  if (!phone || phone.trim().length === 0) {
+    errors.push('Phone number is required');
+  } else if (!Validation.isValidPhone(phone)) {
+    errors.push('Valid phone number is required (10-15 digits, can start with +)');
   }
 
   if (role && !['admin', 'customer'].includes(role)) {
@@ -32,6 +34,14 @@ export const validateRegister = (req: Request, res: Response, next: NextFunction
       errors
     });
   }
+
+  req.body = {
+    name: name.trim(),
+    email: email.trim().toLowerCase(),
+    password: password,
+    phone: phone.trim(),
+    role: role || 'customer'
+  };
 
   next();
 };
@@ -55,6 +65,8 @@ export const validateLogin = (req: Request, res: Response, next: NextFunction) =
       errors
     });
   }
+
+  req.body.email = email.trim().toLowerCase();
 
   next();
 };
